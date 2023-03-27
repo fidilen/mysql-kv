@@ -1,5 +1,5 @@
-# planetscale-ttl
-package utility for planetscale Time to Live data
+# planetscale-kv
+Package utility for mysql-kv, this is built via Planetscale database. Possibly useable for other MySQL servers.
 
 ## Table
 ```sql
