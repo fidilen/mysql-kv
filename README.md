@@ -1,4 +1,4 @@
-# planetscale-kv
+# mysql-kv
 Package utility for mysql-kv, this is built via Planetscale database. Possibly useable for other MySQL servers.
 
 ## Table
