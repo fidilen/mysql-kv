@@ -18,7 +18,7 @@ CREATE TABLE TTL (
 
 ## Usage
 ```js
-const { KV } = require('planetscale-kv');
+const { KV } = require('mysql-kv');
 
 const kv = new KV(process.env.DATABASE_URL);
 
