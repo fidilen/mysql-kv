@@ -1,9 +1,9 @@
 # mysql-kv
-Package utility for mysql-kv, this is built via Planetscale database. Possibly useable for other MySQL servers.
+mysql-kv is a package that provides key-value store capabilities with time-to-live (TTL) expiration in MySQL.
 
 ## Table
 ```sql
-CREATE TABLE TTL (
+CREATE TABLE MYSQL_KV (
     `KEY` VARCHAR(512) NOT NULL,
     `VALUE` LONGTEXT,
     `TTL` INT,

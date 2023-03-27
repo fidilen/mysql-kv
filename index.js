@@ -1,6 +1,6 @@
 const mysql = require('mysql2');
 
-const table_name = `TTL`;
+const table_name = `MYSQL_KV`;
 
 class KV {
     constructor(database_url) {
