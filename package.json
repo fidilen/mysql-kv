@@ -1,6 +1,6 @@
 {
-  "name": "mysql-kv",
-  "version": "1.0.4",
+  "name": "nodejs",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mysql2": "^3.2.0"
+    "dotenv": "^16.0.3",
+    "mysql2": "^3.2.0",
+    "node-schedule": "^2.1.1"
   }
 }
