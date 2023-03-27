@@ -21,6 +21,7 @@ class KV {
                 switch (data.DATA_TYPE) {
                     case "object":
                     case "number":
+                    case "boolean":
                         value = JSON.parse(data.VALUE);
 
                         break;
