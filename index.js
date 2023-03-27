@@ -86,6 +86,18 @@ class KV {
             console.error(e);
         }
     }
+
+    async cleanup() {
+        const sql = 'DELETE FROM ' + table_name + ' WHERE TTL > 0 AND EXPIRY_DATE < ? ';
+
+        try {
+            await this.connection.promise().query(sql, [new Date()]);
+
+            return;
+        } catch (e) {
+            console.error(e);
+        }
+    }
 }
 
 module.exports = { KV };
