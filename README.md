@@ -22,9 +22,10 @@ const { KV } = require('mysql-kv');
 
 const kv = new KV(process.env.DATABASE_URL);
 
-await kv.get("key");
-await kv.set("key", "value", 10);
-await kv.delete("key");
+await kv.get("key");                // get record by key
+await kv.set("key", "value", 10);   // set record by key with value and time to live
+await kv.delete("key");             // delete record by key
+await kv.cleanup();                 // delete expired records
 ```
 
 ## Need Assistance?
