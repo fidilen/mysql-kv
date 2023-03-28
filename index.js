@@ -6,7 +6,7 @@ const axios = require('axios');
 const kv = new KV(process.env.DATABASE_URL);
 
 // Executes every 15th minute of each hour, modify cron below
-schedule.scheduleJob('0 * * * *', async () => {
+schedule.scheduleJob('15 * * * *', async () => {
     try {
         await kv.cleanup();
 
