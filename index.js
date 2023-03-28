@@ -4,18 +4,22 @@ const table_name = `MYSQL_KV`;
 
 class KV {
     constructor(database_url) {
-        this.connection = mysql.createConnection(database_url);
+        this.database_url = database_url;
     }
 
     async get(key, defaultValue = null) {
         const sql = 'SELECT * FROM ' + table_name + ' WHERE `KEY` = ? AND ((TTL > 0 AND EXPIRY_DATE >= ?) OR TTL = 0)';
 
+        let connection, value;
+
         try {
-            const [rows] = await this.connection.promise().query(sql, [key, new Date()]);
+            connection = mysql.createConnection(this.database_url);
+
+            const [rows] = await connection.promise().query(sql, [key, new Date()]);
 
             const data = rows?.shift();
 
-            let value = defaultValue;
+            value = defaultValue;
 
             if (data?.VALUE) {
                 switch (data.DATA_TYPE) {
@@ -32,43 +36,56 @@ class KV {
                         break;
                 }
             }
-
-
-            return value;
         } catch (e) {
             console.error(e);
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
         }
+
+        return value;
     }
 
     async set(key, value, ttl = 0) {
         const sql =
-            ' INSERT INTO ' + table_name + ' (`KEY`, `VALUE`, TTL, DATA_TYPE, EXPIRY_DATE_ISO, EXPIRY_DATE, CREATED_DATE, UPDATED_DATE) ' +
-            `   VALUES (?, ?, ?, ?, ?, ?, ?, ?) ` +
+            ' INSERT INTO ' + table_name + ' (`KEY`, `VALUE`, TTL, DATA_TYPE, EXPIRY_DATE, CREATED_DATE, UPDATED_DATE) ' +
+            `   VALUES (?, ?, ?, ?, ?, ?, ?) ` +
             ` ON DUPLICATE KEY UPDATE ` +
             '    `VALUE` = ? ' +
             `   , TTL = ? ` +
             `   , DATA_TYPE = ? ` +
-            `   , EXPIRY_DATE_ISO = ? ` +
             `   , EXPIRY_DATE = ? ` +
             `   , UPDATED_DATE = ? `;
 
         const dateNow = new Date();
         const expiryDate = new Date(dateNow.getTime() + (ttl * 1000));
-        const expiryDateISOString = expiryDate.toISOString();
 
         const dataType = typeof value;
 
         value = (dataType == "object") ? JSON.stringify(value) : `${value}`;
+
+        let connection;
 
         try {
             if (!Number.isInteger(ttl)) {
                 throw new Error("Value for ttl is not an integer.");
             }
 
-            const [rows] = await this.connection.promise().query(sql, [
-                key, value, ttl, dataType, expiryDateISOString, expiryDate, dateNow, dateNow,
-                value, ttl, dataType, expiryDateISOString, expiryDate, dateNow
+            connection = mysql.createConnection(this.database_url);
+
+            const [rows] = await connection.promise().query(sql, [
+                key, value, ttl, dataType, expiryDate, dateNow, dateNow,
+                value, ttl, dataType, expiryDate, dateNow
             ]);
+
+            if (connection) {
+                try {
+                    await connection.end();
+                } catch (e) {
+                    console.error(e);
+                }
+            }
 
             return rows;
         } catch (e) {
@@ -79,24 +96,36 @@ class KV {
     async delete(key) {
         const sql = 'DELETE FROM ' + table_name + ' WHERE `KEY` = ? ';
 
-        try {
-            await this.connection.promise().query(sql, [key]);
+        let connection;
 
-            return;
+        try {
+            connection = mysql.createConnection(this.database_url);
+
+            await connection.promise().query(sql, [key]);
         } catch (e) {
             console.error(e);
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
         }
     }
 
     async cleanup() {
         const sql = 'DELETE FROM ' + table_name + ' WHERE TTL > 0 AND EXPIRY_DATE < ? ';
 
-        try {
-            await this.connection.promise().query(sql, [new Date()]);
+        let connection;
 
-            return;
+        try {
+            connection = mysql.createConnection(this.database_url);
+            
+            await connection.promise().query(sql, [new Date()]);
         } catch (e) {
             console.error(e);
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
         }
     }
 }
