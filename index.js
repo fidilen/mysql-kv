@@ -22,19 +22,7 @@ class KV {
             value = defaultValue;
 
             if (data?.VALUE) {
-                switch (data.DATA_TYPE) {
-                    case "object":
-                    case "number":
-                    case "boolean":
-                        value = JSON.parse(data.VALUE);
-
-                        break;
-                    case "string":
-                    default:
-                        value = data.VALUE;
-
-                        break;
-                }
+                value = await parseValue(data.DATA_TYPE, data.VALUE);
             }
         } catch (e) {
             console.error(e);
@@ -118,7 +106,7 @@ class KV {
 
         try {
             connection = mysql.createConnection(this.database_url);
-            
+
             await connection.promise().query(sql, [new Date()]);
         } catch (e) {
             console.error(e);
@@ -128,6 +116,53 @@ class KV {
             }
         }
     }
+
+    async filter(key, defaultValue = []) {
+        const sql = 'SELECT * FROM ' + table_name + ' WHERE UPPER(`KEY`) LIKE UPPER(?) AND ((TTL > 0 AND EXPIRY_DATE >= ?) OR TTL = 0)';
+
+        let connection, data;
+
+        try {
+            connection = mysql.createConnection(this.database_url);
+
+            const [rows] = await connection.promise().query(sql, [`%${key}%`, new Date()]);
+
+            data = await Promise.all(rows?.map(async (row) => {
+                return {
+                    key: row.KEY,
+                    value: await parseValue(row.DATA_TYPE, row.VALUE)
+                }
+            })) || defaultValue;
+        } catch (e) {
+            console.error(e);
+        } finally {
+            if (connection) {
+                await connection.end();
+            }
+        }
+
+        return data;
+    }
+}
+
+async function parseValue(type, value) {
+    let parsed = value;
+
+    switch (type) {
+        case "object":
+        case "number":
+        case "boolean":
+            parsed = JSON.parse(value);
+
+            break;
+        case "string":
+        default:
+            parsed = value;
+
+            break;
+    }
+
+    return parsed;
 }
 
 module.exports = { KV };

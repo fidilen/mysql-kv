@@ -63,6 +63,16 @@ let data;
 
     data = await kv.get("KEY_4");
     console.log("10 seconds passed:", typeof data == "object" && data == null);
+
+    // --- for filter
+    await kv.set("NEWKEY_5", "captured by filter");
+    await kv.set("newKey_6", "captured by filter");
+    await kv.set("NOTKEY_7", "not captured by filter", 20);
+
+    data = await kv.filter("NEWKEY");
+    
+    console.log("filter by NEWKEY:", typeof data == "object"
+        && JSON.stringify(data) == JSON.stringify([{ key: "NEWKEY_5", value: "captured by filter" }, { key: "newKey_6", value: "captured by filter" }]));
 })();
 
 async function sleep(ms) {
