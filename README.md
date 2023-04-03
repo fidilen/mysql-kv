@@ -25,6 +25,7 @@ await kv.get("key");                // get record by key
 await kv.set("key", "value", 10);   // set record by key with value and time to live
 await kv.delete("key");             // delete record by key
 await kv.cleanup();                 // delete expired records
+await kv.filter("key");             // filter by key - case insensitive
 ```
 
 ## Need Assistance?
