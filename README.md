@@ -20,7 +20,13 @@ CREATE TABLE MYSQL_KV (
 ```js
 const { KV } = require('mysql-kv');
 
-const kv = new KV(process.env.DATABASE_URL);
+const kv = new KV({
+    host: process.env.DB_HOST,
+    database: process.env.DB_DATABASE,
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    ssl: { rejectUnauthorized: false }
+});
 
 await kv.get("key");
 await kv.set("key", "value", 10);

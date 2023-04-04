@@ -3,7 +3,13 @@ const schedule = require('node-schedule');
 const { KV } = require('mysql-kv');
 const axios = require('axios');
 
-const kv = new KV(process.env.DATABASE_URL);
+const kv = new KV({
+    host: process.env.DB_HOST,
+    database: process.env.DB_DATABASE,
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    ssl: { rejectUnauthorized: false }
+});
 
 // Executes every 15th minute of each hour, modify cron below
 schedule.scheduleJob('15 * * * *', async () => {
