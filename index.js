@@ -3,19 +3,17 @@ const mysql = require('mysql2');
 const table_name = `MYSQL_KV`;
 
 class KV {
-    constructor(database_url) {
-        this.database_url = database_url;
+    constructor(params) {
+        this.params = params;
     }
 
     async get(key, defaultValue = null) {
         const sql = 'SELECT * FROM ' + table_name + ' WHERE `KEY` = ? AND ((TTL > 0 AND EXPIRY_DATE >= ?) OR TTL = 0)';
 
-        let connection, value;
+        let value;
 
         try {
-            connection = mysql.createConnection(this.database_url);
-
-            const [rows] = await connection.promise().query(sql, [key, new Date()]);
+            const rows = await execute(this.params, sql, [key, new Date()]);
 
             const data = rows?.shift();
 
@@ -26,10 +24,6 @@ class KV {
             }
         } catch (e) {
             console.error(e);
-        } finally {
-            if (connection) {
-                await connection.end();
-            }
         }
 
         return value;
@@ -53,27 +47,15 @@ class KV {
 
         value = (dataType == "object") ? JSON.stringify(value) : `${value}`;
 
-        let connection;
-
         try {
             if (!Number.isInteger(ttl)) {
                 throw new Error("Value for ttl is not an integer.");
             }
 
-            connection = mysql.createConnection(this.database_url);
-
-            const [rows] = await connection.promise().query(sql, [
+            const rows = await execute(this.params, sql, [
                 key, value, ttl, dataType, expiryDate, dateNow, dateNow,
                 value, ttl, dataType, expiryDate, dateNow
             ]);
-
-            if (connection) {
-                try {
-                    await connection.end();
-                } catch (e) {
-                    console.error(e);
-                }
-            }
 
             return rows;
         } catch (e) {
@@ -84,48 +66,30 @@ class KV {
     async delete(key) {
         const sql = 'DELETE FROM ' + table_name + ' WHERE `KEY` = ? ';
 
-        let connection;
-
         try {
-            connection = mysql.createConnection(this.database_url);
-
-            await connection.promise().query(sql, [key]);
+            await execute(this.params, sql, [key]);
         } catch (e) {
             console.error(e);
-        } finally {
-            if (connection) {
-                await connection.end();
-            }
         }
     }
 
     async cleanup() {
         const sql = 'DELETE FROM ' + table_name + ' WHERE TTL > 0 AND EXPIRY_DATE < ? ';
 
-        let connection;
-
         try {
-            connection = mysql.createConnection(this.database_url);
-
-            await connection.promise().query(sql, [new Date()]);
+            await execute(this.params, sql, [new Date()]);
         } catch (e) {
             console.error(e);
-        } finally {
-            if (connection) {
-                await connection.end();
-            }
         }
     }
 
     async filter(key, defaultValue = []) {
         const sql = 'SELECT * FROM ' + table_name + ' WHERE UPPER(`KEY`) LIKE UPPER(?) AND ((TTL > 0 AND EXPIRY_DATE >= ?) OR TTL = 0)';
 
-        let connection, data;
+        let data;
 
         try {
-            connection = mysql.createConnection(this.database_url);
-
-            const [rows] = await connection.promise().query(sql, [`%${key}%`, new Date()]);
+            const rows = await execute(this.params, sql, [`%${key}%`, new Date()]);
 
             data = await Promise.all(rows?.map(async (row) => {
                 return {
@@ -135,13 +99,21 @@ class KV {
             })) || defaultValue;
         } catch (e) {
             console.error(e);
-        } finally {
-            if (connection) {
-                await connection.end();
-            }
         }
 
         return data;
+    }
+}
+
+async function execute(params, sql, criteria) {
+    let pool = mysql.createPool(params);
+
+    try {
+        const [rows] = await pool.promise().execute(sql, criteria);
+
+        return rows;
+    } catch (e) {
+        console.log(e);
     }
 }
 

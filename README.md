@@ -19,7 +19,13 @@ CREATE TABLE MYSQL_KV (
 ```js
 const { KV } = require('mysql-kv');
 
-const kv = new KV(process.env.DATABASE_URL);
+// See details: https://www.npmjs.com/package/mysql2#using-connection-pools
+const kv = new KV({
+    host: process.env.DB_HOST,
+    database: process.env.DB_DATABASE,
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD
+});
 
 await kv.get("key");                // get record by key
 await kv.set("key", "value", 10);   // set record by key with value and time to live

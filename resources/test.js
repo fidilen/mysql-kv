@@ -1,6 +1,12 @@
 const { KV } = require(process.cwd() + '/index.js');
 
-const kv = new KV(process.env.DATABASE_URL);
+const kv = new KV({
+    host: process.env.DB_HOST,
+    database: process.env.DB_DATABASE,
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    ssl: { rejectUnauthorized: false }
+});
 
 let data;
 
@@ -70,7 +76,7 @@ let data;
     await kv.set("NOTKEY_7", "not captured by filter", 20);
 
     data = await kv.filter("NEWKEY");
-    
+
     console.log("filter by NEWKEY:", typeof data == "object"
         && JSON.stringify(data) == JSON.stringify([{ key: "NEWKEY_5", value: "captured by filter" }, { key: "newKey_6", value: "captured by filter" }]));
 })();
