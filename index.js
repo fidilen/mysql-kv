@@ -13,20 +13,33 @@ const kv = new KV({
 
 // Executes every 15th minute of each hour, modify cron below
 schedule.scheduleJob('15 * * * *', async () => {
+    await cleanup();
+});
+
+// immediate trigger
+(async () => {
+    await cleanup();
+})();
+
+async function cleanup() {
     try {
         await kv.cleanup();
 
         await notifyDiscordWebhook(); // this is optional
     } catch (e) {
         console.error(e);
-    }
-});
 
-async function notifyDiscordWebhook() {
+        await notifyDiscordWebhook(e);
+    }
+}
+
+async function notifyDiscordWebhook(error) {
+    const message = error || `Cleanup triggered: <t:${Math.floor(new Date().getTime() / 1000)}>`;
+
     axios.post(`${process.env.DISCORD_WEBHOOK_URL}`, {
         username: "KV Cleaner",
         avatar_url: "",
-        content: `Cleanup triggered: <t:${Math.floor(new Date().getTime() / 1000)}>`
+        content: message
     }).catch(function (error) {
         console.log(error);
     });
