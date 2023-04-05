@@ -23,7 +23,7 @@ class KV {
                 value = await parseValue(data.DATA_TYPE, data.VALUE);
             }
         } catch (e) {
-            console.error(e);
+            throw new Error(e);
         }
 
         return value;
@@ -59,7 +59,7 @@ class KV {
 
             return rows;
         } catch (e) {
-            console.error(e);
+            throw new Error(e);
         }
     }
 
@@ -69,7 +69,7 @@ class KV {
         try {
             await execute(this.params, sql, [key]);
         } catch (e) {
-            console.error(e);
+            throw new Error(e);
         }
     }
 
@@ -79,7 +79,7 @@ class KV {
         try {
             await execute(this.params, sql, [new Date()]);
         } catch (e) {
-            console.error(e);
+            throw new Error(e);
         }
     }
 
@@ -98,7 +98,7 @@ class KV {
                 }
             })) || defaultValue;
         } catch (e) {
-            console.error(e);
+            throw new Error(e);
         }
 
         return data;
@@ -113,7 +113,7 @@ async function execute(params, sql, criteria) {
 
         return rows;
     } catch (e) {
-        console.log(e);
+        throw new Error(e);
     }
 }
 
