@@ -89,6 +89,10 @@ class KV {
         let data;
 
         try {
+            if (typeof this.params === "string") {
+                throw new Error("Invalid credentials. Expected an Object.");
+            }
+
             const rows = await execute(this.params, sql, [`%${key}%`, new Date()]);
 
             data = await Promise.all(rows?.map(async (row) => {
