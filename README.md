@@ -32,6 +32,8 @@ await kv.set("key", "value", 10);   // set record by key with value and time to 
 await kv.delete("key");             // delete record by key
 await kv.cleanup();                 // delete expired records
 await kv.filter("key");             // filter by key - case insensitive
+await kv.entries();                 // retrieve all KV records
+await kv.custom(query, criteria);   // custom query: query - parameterized sql; criteria - array of ordered parameters for the sql
 ```
 
 ## Need Assistance?

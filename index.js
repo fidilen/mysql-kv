@@ -23,7 +23,7 @@ class KV {
                 value = await parseValue(data.DATA_TYPE, data.VALUE);
             }
         } catch (e) {
-            throw new Error(e);
+            console.error(e);
         }
 
         return value;
@@ -59,7 +59,7 @@ class KV {
 
             return rows;
         } catch (e) {
-            throw new Error(e);
+            console.error(e);
         }
     }
 
@@ -69,7 +69,7 @@ class KV {
         try {
             await execute(this.params, sql, [key]);
         } catch (e) {
-            throw new Error(e);
+            console.error(e);
         }
     }
 
@@ -79,7 +79,7 @@ class KV {
         try {
             await execute(this.params, sql, [new Date()]);
         } catch (e) {
-            throw new Error(e);
+            console.error(e);
         }
     }
 
@@ -89,10 +89,6 @@ class KV {
         let data;
 
         try {
-            if (typeof this.params === "string") {
-                throw new Error("Invalid credentials. Expected an Object.");
-            }
-
             const rows = await execute(this.params, sql, [`%${key}%`, new Date()]);
 
             data = await Promise.all(rows?.map(async (row) => {
@@ -102,7 +98,40 @@ class KV {
                 }
             })) || defaultValue;
         } catch (e) {
-            throw new Error(e);
+            console.error(e);
+        }
+
+        return data;
+    }
+
+    async entries() {
+        const sql = 'SELECT * FROM ' + table_name;
+
+        let data;
+
+        try {
+            const rows = await execute(this.params, sql, null);
+
+            data = await Promise.all(rows?.map(async (row) => {
+                return {
+                    key: row.KEY,
+                    value: await parseValue(row.DATA_TYPE, row.VALUE)
+                }
+            })) || [];
+        } catch (e) {
+            console.error(e);
+        }
+
+        return data;
+    }
+
+    async custom(query, criteria) {
+        let data = [];
+
+        try {
+            data = await execute(this.params, query, criteria);
+        } catch (e) {
+            console.error(e);
         }
 
         return data;
@@ -117,7 +146,7 @@ async function execute(params, sql, criteria) {
 
         return rows;
     } catch (e) {
-        throw new Error(e);
+        console.log(e);
     }
 }
 
