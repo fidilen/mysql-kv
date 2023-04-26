@@ -86,7 +86,7 @@ class KV {
     async filter(key, defaultValue = []) {
         const sql = 'SELECT * FROM ' + table_name + ' WHERE UPPER(`KEY`) LIKE UPPER(?) AND ((TTL > 0 AND EXPIRY_DATE >= ?) OR TTL = 0)';
 
-        let data;
+        let data = defaultValue;
 
         try {
             const rows = await execute(this.params, sql, [`%${key}%`, new Date()]);
